@@ -12,7 +12,12 @@
   select, input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
   
   /* Disabled Option Style */
-  option:disabled { background-color: #f2f2f2; color: #a1a1a1; font-style: italic; }
+  select:disabled, option:disabled { 
+    background-color: #e9e9e9; 
+    color: #a1a1a1; 
+    font-style: italic; 
+    cursor: not-allowed;
+  }
 
   button { width: 100%; padding: 14px; background: #007bff; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background 0.3s; }
   button:hover { background: #0056b3; }
@@ -69,28 +74,29 @@
 
   <div class="field">
     <label>Email</label>
+    <small style="color:#666; display:block; margin-bottom:5px;">Enter a valid @nitte.edu.in email to unlock subjects.</small>
     <input type="email" id="email" placeholder="example@nitte.edu.in" onblur="checkHistory()">
-    <div id="emailLoader" class="email-loader">Checking previous submissions...</div>
+    <div id="emailLoader" class="email-loader">Verifying email...</div>
   </div>
 
   <div class="field">
     <label>Priority 1</label>
-    <select id="opt1" onchange="checkDupes()"><option>Loading...</option></select>
+    <select id="opt1" onchange="checkDupes()" disabled><option>Enter Email First</option></select>
   </div>
 
   <div class="field">
     <label>Priority 2</label>
-    <select id="opt2" onchange="checkDupes()"><option>Loading...</option></select>
+    <select id="opt2" onchange="checkDupes()" disabled><option>Enter Email First</option></select>
   </div>
 
   <div class="field">
     <label>Priority 3</label>
-    <select id="opt3" onchange="checkDupes()"><option>Loading...</option></select>
+    <select id="opt3" onchange="checkDupes()" disabled><option>Enter Email First</option></select>
   </div>
 
   <div class="field">
     <label>PG Subject</label>
-    <select id="pg"><option>Loading...</option></select>
+    <select id="pg" disabled><option>Enter Email First</option></select>
   </div>
 
   <button id="btnSubmit" onclick="submitForm()" disabled>Loading Data...</button>
@@ -161,25 +167,20 @@ function fetchSystemData() {
   fetch(SCRIPT_URL)
     .then(response => response.json())
     .then(data => {
-      // Safety Check
       if(!data.limits) {
         throw new Error("Backend script missing 'limits'. Check Google Script version.");
       }
 
-      // 1. Save Limits (From 'Limits' tab)
       UG_LIMITS = data.limits.ug;
       PG_LIMITS = data.limits.pg;
-      
-      // 2. Save Counts (From 'Responses' tab)
       LIVE_COUNTS = data.counts;
 
-      // 3. Render Dropdowns
+      // Note: We populate them, but they remain DISABLED in HTML until email check
       renderDropdowns();
       
-      status.innerText = "System Ready. Synced with Google Sheet.";
+      status.innerText = "System Ready. Please enter your details.";
       status.style.color = "green";
       
-      // Enable submit button now that data is loaded
       btn.innerText = "Submit Selection";
       btn.disabled = false;
     })
@@ -193,9 +194,7 @@ function fetchSystemData() {
 
 // ----------------- RENDER DROPDOWNS -----------------
 function renderDropdowns() {
-  // Populate UG Dropdowns
   ["opt1", "opt2", "opt3"].forEach(id => populateSelect(id, UG_LIMITS, LIVE_COUNTS.ug));
-  // Populate PG Dropdown
   populateSelect("pg", PG_LIMITS, LIVE_COUNTS.pg);
 }
 
@@ -205,7 +204,6 @@ function populateSelect(id, limits, counts) {
   
   select.innerHTML = '<option value="">-- Select Subject --</option>';
 
-  // Iterate over limits (Dynamic list from sheet)
   for (const [subject, limit] of Object.entries(limits)) {
     const used = counts[subject] || 0;
     const option = document.createElement("option");
@@ -222,7 +220,6 @@ function populateSelect(id, limits, counts) {
     select.appendChild(option);
   }
   
-  // Restore selection if valid
   if(currentSelection) {
     const optToCheck = select.querySelector(`option[value="${currentSelection}"]`);
     if(optToCheck && !optToCheck.disabled) select.value = currentSelection;
@@ -230,33 +227,60 @@ function populateSelect(id, limits, counts) {
   }
 }
 
-// ----------------- CHECK EMAIL HISTORY -----------------
+// ----------------- HELPER: LOCK/UNLOCK DROPDOWNS -----------------
+function toggleDropdowns(enable) {
+  const ids = ["opt1", "opt2", "opt3", "pg"];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    el.disabled = !enable;
+    // If we lock them, we might want to reset the view or keep it. 
+    // Usually standard is to leave it but grayed out.
+  });
+}
+
+// ----------------- CHECK EMAIL HISTORY & VALIDATE -----------------
 function checkHistory() {
   const email = document.getElementById("email").value.trim();
-  if(!email || !email.includes("@")) return;
-
+  const msg = document.getElementById("msg");
   const loader = document.getElementById("emailLoader");
   const btn = document.getElementById("btnSubmit");
+
+  // 1. Default: Lock everything first
+  toggleDropdowns(false);
+  msg.innerHTML = "";
   
+  if(!email) return;
+
+  // 2. Domain Validation
+  if(!email.endsWith("@nitte.edu.in")) {
+    msg.innerHTML = "<span class='error'>Invalid email. Use @nitte.edu.in to unlock options.</span>";
+    return;
+  }
+
+  // 3. Check History
   loader.style.display = "block";
-  btn.disabled = true; // Block submit while checking
+  btn.disabled = true;
 
   fetch(`${SCRIPT_URL}?check_email=${encodeURIComponent(email)}`)
     .then(res => res.json())
     .then(result => {
       loader.style.display = "none";
+      btn.disabled = false;
+
       if(result.found) {
-        // If found, immediately show summary
+        // Found in history -> Show summary (Still locked)
         showSummaryPage(result.data, true);
       } else {
-        // If not found, allow user to continue
-        btn.disabled = false;
+        // Not found -> VALID NEW USER -> UNLOCK
+        toggleDropdowns(true);
+        msg.innerHTML = "<span class='success'>Email verified. Options unlocked.</span>";
       }
     })
     .catch(err => {
       console.error(err);
       loader.style.display = "none";
-      btn.disabled = false; // Allow usage on error to avoid blocking user
+      btn.disabled = false;
+      msg.innerHTML = "<span class='error'>Error verifying email. Check internet.</span>";
     });
 }
 
@@ -323,13 +347,18 @@ function submitForm() {
     return;
   }
   
-  // NOTE: Changed error message to match your code check (@nitte.edu.in)
   if(!payload.email.endsWith("@nitte.edu.in")){
     msg.innerHTML = "<span class='error'>Only @nitte.edu.in emails allowed.</span>";
     return;
   }
 
-  // 2. Client-Side Capacity Check
+  // 2. CONFIRMATION POPUP (New Feature)
+  const userConfirmed = confirm("Are you sure you want to submit?\n\nNO EDIT OPTION is provided later. Please double check your choices.");
+  if (!userConfirmed) {
+    return; // Stop here if user clicks Cancel
+  }
+
+  // 3. Client-Side Capacity Check
   const choices = [payload.opt1, payload.opt2, payload.opt3];
   for(let c of choices){
      if((LIVE_COUNTS.ug[c]||0) >= (UG_LIMITS[c]||0)){
@@ -342,7 +371,7 @@ function submitForm() {
      return;
   }
 
-  // 3. Send Data
+  // 4. Send Data
   btn.disabled = true;
   btn.innerText = "Submitting...";
   msg.innerHTML = "";
@@ -354,7 +383,6 @@ function submitForm() {
     body: JSON.stringify(payload)
   })
   .then(() => {
-    // 4. On Success, show summary
     showSummaryPage(payload, false);
   })
   .catch(() => {
