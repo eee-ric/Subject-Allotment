@@ -144,4 +144,68 @@ const OPTION_LIMITS = {
 const PG_OPTION_LIMITS = {
   "25EVT201_Power Electronic Converters": 4,
   "25EVT202_EV motor drives and control": 9,
-  "25EVT211_Battery Manage_
+  "25EVT211_Battery Management System": 6,
+  "25EVT231_Automotive Computer Controlled Systems": 7,
+  "25EVTAU21_PCB Design": 2,
+  "No Choice": 10
+};
+
+const MAIN_QUESTION_TITLES = ["opt1", "opt2", "opt3"];
+const PG_QUESTION_ID = "pgOpt";
+
+function populateDropdown(id, optionsObj) {
+    const sel = document.getElementById(id);
+    sel.innerHTML = `<option value="">-- Select --</option>`;
+    for (let key in optionsObj) {
+        sel.innerHTML += `<option value="${key}">${key} (Limit: ${optionsObj[key]})</option>`;
+    }
+}
+
+populateDropdown("opt1", OPTION_LIMITS);
+populateDropdown("opt2", OPTION_LIMITS);
+populateDropdown("opt3", OPTION_LIMITS);
+populateDropdown("pgOpt", PG_OPTION_LIMITS);
+
+MAIN_QUESTION_TITLES.forEach(id => {
+    document.getElementById(id).addEventListener("change", validateSelections);
+});
+
+document.getElementById(PG_QUESTION_ID).addEventListener("change", validateSelections);
+
+function validateSelections() {
+    const msg = document.getElementById("msg");
+    msg.style.display = "none";
+
+    // Collect selections
+    let selections = MAIN_QUESTION_TITLES.map(id => document.getElementById(id).value);
+
+    // Count occurrences
+    let counts = {};
+    selections.forEach(sel => {
+        if (sel !== "") counts[sel] = (counts[sel] || 0) + 1;
+    });
+
+    // Check limits
+    for (let opt in counts) {
+        if (counts[opt] > OPTION_LIMITS[opt]) {
+            msg.innerHTML = `❌ "${opt}" selected ${counts[opt]} times, but limit is ${OPTION_LIMITS[opt]}.`;
+            msg.style.display = "block";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function submitForm() {
+    if (!validateSelections()) {
+        alert("Please fix the errors before submitting.");
+        return;
+    }
+
+    alert("Form submitted successfully!");
+}
+</script>
+
+</body>
+</html>
