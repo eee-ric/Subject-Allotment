@@ -1,47 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Option Selection Validator</title>
+<meta charset="UTF-8">
+<title>Advanced Selection Form</title>
+
 <style>
-body {
-    font-family: Arial;
-    margin: 20px;
-}
-select {
-    width: 450px;
-    padding: 6px;
-    margin-bottom: 15px;
-}
-.error {
-    color: red;
-    font-weight: bold;
-    margin-top: 10px;
-}
-.success {
-    color: green;
-    font-weight: bold;
-}
+    body {
+        background: #f5f5f5;
+        font-family: "Roboto", sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        padding-top: 40px;
+    }
+
+    .form-card {
+        background: white;
+        width: 650px;
+        padding: 30px 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    h2 {
+        margin-top: 0;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .form-section {
+        margin-bottom: 25px;
+    }
+
+    label {
+        display: block;
+        font-size: 15px;
+        font-weight: 500;
+        margin-bottom: 6px;
+        color: #444;
+    }
+
+    select {
+        width: 100%;
+        padding: 12px;
+        font-size: 15px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        outline: none;
+        transition: 0.25s;
+        background: #fff;
+    }
+
+    select:focus {
+        border-color: #4285f4;
+        box-shadow: 0 0 0 3px rgba(66,133,244,0.25);
+    }
+
+    #msg {
+        margin-top: 15px;
+        font-size: 15px;
+        font-weight: 500;
+        color: #d93025;
+        background: #fde8e6;
+        padding: 10px 14px;
+        border-radius: 8px;
+        display: none;
+    }
+
+    .submit-btn {
+        background: #4285f4;
+        color: white;
+        border: none;
+        padding: 12px 22px;
+        font-size: 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.25s;
+    }
+
+    .submit-btn:hover {
+        background: #3367d6;
+    }
 </style>
 </head>
 <body>
 
-<h2>Selection Form</h2>
+<div class="form-card">
+    <h2>Course Selection Form</h2>
 
-<label>Option 1:</label><br>
-<select id="opt1"></select><br>
+    <div class="form-section">
+        <label>Option 1</label>
+        <select id="opt1"></select>
+    </div>
 
-<label>Option 2:</label><br>
-<select id="opt2"></select><br>
+    <div class="form-section">
+        <label>Option 2</label>
+        <select id="opt2"></select>
+    </div>
 
-<label>Option 3:</label><br>
-<select id="opt3"></select><br>
+    <div class="form-section">
+        <label>Option 3</label>
+        <select id="opt3"></select>
+    </div>
 
-<label>PG Option:</label><br>
-<select id="pgOpt"></select><br>
+    <div class="form-section">
+        <label>PG Option</label>
+        <select id="pgOpt"></select>
+    </div>
 
-<div id="msg" class="error"></div>
+    <div id="msg"></div>
 
-<button onclick="submitForm()">Submit</button>
+    <button class="submit-btn" onclick="submitForm()">Submit</button>
+</div>
 
 <script>
 /*************************************************
@@ -73,65 +144,4 @@ const OPTION_LIMITS = {
 const PG_OPTION_LIMITS = {
   "25EVT201_Power Electronic Converters": 4,
   "25EVT202_EV motor drives and control": 9,
-  "25EVT211_Battery Management System": 6,
-  "25EVT231_Automotive Computer Controlled Systems": 7,
-  "25EVTAU21_PCB Design": 2,
-  "No Choice": 10
-};
-
-const MAIN_QUESTION_TITLES = ["opt1", "opt2", "opt3"];
-const PG_QUESTION_ID = "pgOpt";
-
-function populateDropdown(id, optionsObj) {
-    const sel = document.getElementById(id);
-    sel.innerHTML = `<option value="">-- Select --</option>`;
-    for (let key in optionsObj) {
-        sel.innerHTML += `<option value="${key}">${key} (Limit: ${optionsObj[key]})</option>`;
-    }
-}
-
-populateDropdown("opt1", OPTION_LIMITS);
-populateDropdown("opt2", OPTION_LIMITS);
-populateDropdown("opt3", OPTION_LIMITS);
-populateDropdown("pgOpt", PG_OPTION_LIMITS);
-
-MAIN_QUESTION_TITLES.forEach(id => {
-    document.getElementById(id).addEventListener("change", validateSelections);
-});
-
-document.getElementById(PG_QUESTION_ID).addEventListener("change", validateSelections);
-
-function validateSelections() {
-    const msg = document.getElementById("msg");
-    msg.innerHTML = "";
-
-    let selections = MAIN_QUESTION_TITLES.map(id => document.getElementById(id).value);
-
-    let counts = {};
-    selections.forEach(sel => {
-        if (sel !== "") {
-            counts[sel] = (counts[sel] || 0) + 1;
-        }
-    });
-
-    for (let opt in counts) {
-        if (counts[opt] > OPTION_LIMITS[opt]) {
-            msg.innerHTML = `❌ Error: "${opt}" selected ${counts[opt]} times, but limit is ${OPTION_LIMITS[opt]}.`;
-            return false;
-        }
-    }
-
-    return true;
-}
-
-function submitForm() {
-    if (!validateSelections()) {
-        alert("Fix errors before submitting.");
-        return;
-    }
-    alert("Form submitted successfully!");
-}
-</script>
-
-</body>
-</html>
+  "25EVT211_Battery Manage_
