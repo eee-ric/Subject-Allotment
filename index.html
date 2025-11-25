@@ -42,13 +42,23 @@
   .summary-item:last-child { border-bottom: none; margin-bottom: 0; }
   .summary-label { font-weight: bold; color: #555; display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
   .summary-val { color: #000; display: block; margin-top: 2px; }
+
+  /* FOOTER STYLE */
+  .footer {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: #888;
+    font-weight: 500;
+  }
 </style>
 </head>
 <body>
 
 <div class="container" id="formContainer">
-  <h2>Subject Selection</h2>
-  <h2>Department of EEE, NMAMIT, Nitte</h2>
+  <h2>Subject Selection Form</h2>
+  <h4 style="text-align:center; color:#555; margin-top:-15px;">Department of EEE, NMAMIT, Nitte</h4>
   
   <div id="statusBar" class="status-bar">Initializing System...</div>
 
@@ -59,7 +69,7 @@
 
   <div class="field">
     <label>Email</label>
-    <input type="email" id="email" placeholder="example@gmail.com" onblur="checkHistory()">
+    <input type="email" id="email" placeholder="example@nitte.edu.in" onblur="checkHistory()">
     <div id="emailLoader" class="email-loader">Checking previous submissions...</div>
   </div>
 
@@ -121,9 +131,13 @@
   </p>
 </div>
 
+<div class="footer">
+  Developed by Team RIC, EE, NMAMIT, Nitte
+</div>
+
 <script>
 // ==========================================
-// 1. PASTE YOUR NEW WEB APP URL BELOW
+// 1. YOUR SCRIPT URL
 // ==========================================
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJuGD-NqGIppUlh155nt5A3wHGg-LcW3pBQ4IEBsxGc1-T3tmQa8Zr7pvlcMVLmUSV_w/exec"; 
 
@@ -147,7 +161,7 @@ function fetchSystemData() {
   fetch(SCRIPT_URL)
     .then(response => response.json())
     .then(data => {
-      // Safety Check: Did the script return the right data structure?
+      // Safety Check
       if(!data.limits) {
         throw new Error("Backend script missing 'limits'. Check Google Script version.");
       }
@@ -308,8 +322,10 @@ function submitForm() {
     msg.innerHTML = "<span class='error'>Please fill all fields.</span>";
     return;
   }
+  
+  // NOTE: Changed error message to match your code check (@nitte.edu.in)
   if(!payload.email.endsWith("@nitte.edu.in")){
-    msg.innerHTML = "<span class='error'>Only @gmail.com emails allowed.</span>";
+    msg.innerHTML = "<span class='error'>Only @nitte.edu.in emails allowed.</span>";
     return;
   }
 
