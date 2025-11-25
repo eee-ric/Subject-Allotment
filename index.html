@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Option Selection Validator</title>
+<style>
+body {
+    font-family: Arial;
+    margin: 20px;
+}
+select {
+    width: 450px;
+    padding: 6px;
+    margin-bottom: 15px;
+}
+.error {
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
+}
+.success {
+    color: green;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<h2>Selection Form</h2>
+
+<label>Option 1:</label><br>
+<select id="opt1"></select><br>
+
+<label>Option 2:</label><br>
+<select id="opt2"></select><br>
+
+<label>Option 3:</label><br>
+<select id="opt3"></select><br>
+
+<label>PG Option:</label><br>
+<select id="pgOpt"></select><br>
+
+<div id="msg" class="error"></div>
+
+<button onclick="submitForm()">Submit</button>
+
+<script>
+/*************************************************
+ * LIMIT FOR MAIN OPTIONS
+ *************************************************/
+const OPTION_LIMITS = {
+  "EEE102_Elements of Electrical Engineering": 1,
+  "25ECE101_Applied Digital Logic Design": 7,
+  "25SCE101_Introduction to C Programming": 3,
+  "EE2002-1_Instrumentation and Measurements": 9,
+  "EE3002-1_Linear Control Systems": 6,
+  "EE2102-1_Electrical Machines I": 2,
+  "EE2103-1_Electromagnetic Fields": 5,
+  "EE3003-1_Signal Analysis and Processing": 8,
+  "EE3102-1_Power System Analysis and Stability": 1,
+  "MG1003-1_Management & Entrepreneurship": 10,
+  "EE3201-1_Switched Mode Power Converters": 6,
+  "EE2322-1_Operation and Maintenance of Solar Electrical Systems": 3,
+  "EE2311-1_Programmable Logic Controllers": 7,
+  "EE2371-1_Fuzzy Logic Control": 4,
+  "EE2503-1_Electric Vehicle Technology (Open Elective)": 2,
+  "EE2506-1_Non Conentional Energy Sources (Open Elective)": 8,
+  "HU1008-1_Life Skills for Engineers": 5
+};
+
+/*************************************************
+ * LIMIT FOR PG OPTIONS
+ *************************************************/
+const PG_OPTION_LIMITS = {
+  "25EVT201_Power Electronic Converters": 4,
+  "25EVT202_EV motor drives and control": 9,
+  "25EVT211_Battery Management System": 6,
+  "25EVT231_Automotive Computer Controlled Systems": 7,
+  "25EVTAU21_PCB Design": 2,
+  "No Choice": 10
+};
+
+const MAIN_QUESTION_TITLES = ["opt1", "opt2", "opt3"];
+const PG_QUESTION_ID = "pgOpt";
+
+function populateDropdown(id, optionsObj) {
+    const sel = document.getElementById(id);
+    sel.innerHTML = `<option value="">-- Select --</option>`;
+    for (let key in optionsObj) {
+        sel.innerHTML += `<option value="${key}">${key} (Limit: ${optionsObj[key]})</option>`;
+    }
+}
+
+populateDropdown("opt1", OPTION_LIMITS);
+populateDropdown("opt2", OPTION_LIMITS);
+populateDropdown("opt3", OPTION_LIMITS);
+populateDropdown("pgOpt", PG_OPTION_LIMITS);
+
+MAIN_QUESTION_TITLES.forEach(id => {
+    document.getElementById(id).addEventListener("change", validateSelections);
+});
+
+document.getElementById(PG_QUESTION_ID).addEventListener("change", validateSelections);
+
+function validateSelections() {
+    const msg = document.getElementById("msg");
+    msg.innerHTML = "";
+
+    let selections = MAIN_QUESTION_TITLES.map(id => document.getElementById(id).value);
+
+    let counts = {};
+    selections.forEach(sel => {
+        if (sel !== "") {
+            counts[sel] = (counts[sel] || 0) + 1;
+        }
+    });
+
+    for (let opt in counts) {
+        if (counts[opt] > OPTION_LIMITS[opt]) {
+            msg.innerHTML = `❌ Error: "${opt}" selected ${counts[opt]} times, but limit is ${OPTION_LIMITS[opt]}.`;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function submitForm() {
+    if (!validateSelections()) {
+        alert("Fix errors before submitting.");
+        return;
+    }
+    alert("Form submitted successfully!");
+}
+</script>
+
+</body>
+</html>
