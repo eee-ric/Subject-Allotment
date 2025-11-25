@@ -1,209 +1,350 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Advanced Selection Form</title>
-
+<title>Subject Selection Form</title>
 <style>
-    body {
-        background: #f5f5f5;
-        font-family: "Roboto", sans-serif;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        padding-top: 40px;
-    }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; }
+  .container { max-width: 600px; margin: auto; background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+  h2 { text-align: center; color: #333; margin-top: 0; }
+  .field { margin-bottom: 20px; }
+  label { font-weight: 600; display: block; margin-bottom: 8px; color: #444; }
+  select, input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+  
+  /* Disabled Option Style */
+  option:disabled { background-color: #f2f2f2; color: #a1a1a1; font-style: italic; }
 
-    .form-card {
-        background: white;
-        width: 650px;
-        padding: 30px 40px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
+  button { width: 100%; padding: 14px; background: #007bff; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background 0.3s; }
+  button:hover { background: #0056b3; }
+  button:disabled { background: #ccc; cursor: not-allowed; }
 
-    h2 {
-        margin-top: 0;
-        font-weight: 500;
-        color: #333;
-    }
+  .msg { margin-top: 15px; text-align: center; font-weight: bold; min-height: 20px; }
+  .error { color: #d93025; }
+  .success { color: #188038; }
 
-    .form-section {
-        margin-bottom: 25px;
-    }
+  .status-bar { font-size: 13px; color: #666; text-align: center; margin-bottom: 20px; background: #e8f0fe; padding: 8px; border-radius: 6px; }
 
-    label {
-        display: block;
-        font-size: 15px;
-        font-weight: 500;
-        margin-bottom: 6px;
-        color: #444;
-    }
+  /* EMAIL LOADER */
+  .email-loader { font-size: 12px; color: #007bff; display: none; margin-top: 4px; font-style: italic; }
 
-    select {
-        width: 100%;
-        padding: 12px;
-        font-size: 15px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        outline: none;
-        transition: 0.25s;
-        background: #fff;
-    }
+  /* THANK YOU / SUMMARY STYLES */
+  .thank-you-box { text-align: center; display: none; }
+  .checkmark { font-size: 50px; color: #28a745; margin-bottom: 10px; display: block; }
+  .warning-icon { font-size: 50px; color: #ff9800; margin-bottom: 10px; display: block; }
 
-    select:focus {
-        border-color: #4285f4;
-        box-shadow: 0 0 0 3px rgba(66,133,244,0.25);
-    }
+  .ty-title { font-size: 24px; color: #333; margin-bottom: 5px; }
+  .ty-text { color: #666; font-size: 16px; margin-bottom: 20px; }
 
-    #msg {
-        margin-top: 15px;
-        font-size: 15px;
-        font-weight: 500;
-        color: #d93025;
-        background: #fde8e6;
-        padding: 10px 14px;
-        border-radius: 8px;
-        display: none;
-    }
-
-    .submit-btn {
-        background: #4285f4;
-        color: white;
-        border: none;
-        padding: 12px 22px;
-        font-size: 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: 0.25s;
-    }
-
-    .submit-btn:hover {
-        background: #3367d6;
-    }
+  .summary-card {
+    background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 15px; text-align: left; margin-top: 20px; font-size: 14px;
+  }
+  .summary-item { margin-bottom: 10px; border-bottom: 1px dashed #ddd; padding-bottom: 5px; }
+  .summary-item:last-child { border-bottom: none; margin-bottom: 0; }
+  .summary-label { font-weight: bold; color: #555; display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .summary-val { color: #000; display: block; margin-top: 2px; }
 </style>
 </head>
 <body>
 
-<div class="form-card">
-    <h2>Course Selection Form</h2>
+<div class="container" id="formContainer">
+  <h2>Subject Selection</h2>
+  
+  <div id="statusBar" class="status-bar">Initializing System...</div>
 
-    <div class="form-section">
-        <label>Option 1</label>
-        <select id="opt1"></select>
+  <div class="field">
+    <label>Name</label>
+    <input type="text" id="name" placeholder="Enter your full name">
+  </div>
+
+  <div class="field">
+    <label>Email</label>
+    <input type="email" id="email" placeholder="example@gmail.com" onblur="checkHistory()">
+    <div id="emailLoader" class="email-loader">Checking previous submissions...</div>
+  </div>
+
+  <div class="field">
+    <label>Priority 1</label>
+    <select id="opt1" onchange="checkDupes()"><option>Loading...</option></select>
+  </div>
+
+  <div class="field">
+    <label>Priority 2</label>
+    <select id="opt2" onchange="checkDupes()"><option>Loading...</option></select>
+  </div>
+
+  <div class="field">
+    <label>Priority 3</label>
+    <select id="opt3" onchange="checkDupes()"><option>Loading...</option></select>
+  </div>
+
+  <div class="field">
+    <label>PG Subject</label>
+    <select id="pg"><option>Loading...</option></select>
+  </div>
+
+  <button id="btnSubmit" onclick="submitForm()" disabled>Loading Data...</button>
+  <div id="msg" class="msg"></div>
+</div>
+
+<div class="container thank-you-box" id="thankYouContainer">
+  <span id="tyIcon" class="checkmark">✔</span>
+  
+  <h2 class="ty-title" id="tyTitle">Submission Successful!</h2>
+  
+  <p class="ty-text">
+    <span id="tyMessage">Your choices have been saved.</span><br>
+    Name: <span id="tyName" style="font-weight:bold;"></span>
+  </p>
+
+  <div class="summary-card">
+    <div class="summary-item">
+      <span class="summary-label">Priority 1</span>
+      <span class="summary-val" id="tyOpt1"></span>
     </div>
-
-    <div class="form-section">
-        <label>Option 2</label>
-        <select id="opt2"></select>
+    <div class="summary-item">
+      <span class="summary-label">Priority 2</span>
+      <span class="summary-val" id="tyOpt2"></span>
     </div>
-
-    <div class="form-section">
-        <label>Option 3</label>
-        <select id="opt3"></select>
+    <div class="summary-item">
+      <span class="summary-label">Priority 3</span>
+      <span class="summary-val" id="tyOpt3"></span>
     </div>
-
-    <div class="form-section">
-        <label>PG Option</label>
-        <select id="pgOpt"></select>
+    <div class="summary-item">
+      <span class="summary-label">PG Subject</span>
+      <span class="summary-val" id="tyPg"></span>
     </div>
+  </div>
 
-    <div id="msg"></div>
-
-    <button class="submit-btn" onclick="submitForm()">Submit</button>
+  <p style="margin-top:20px; font-size:13px; color:#888;">
+    You can close this tab now.
+  </p>
 </div>
 
 <script>
-/*************************************************
- * LIMIT FOR MAIN OPTIONS
- *************************************************/
-const OPTION_LIMITS = {
-  "EEE102_Elements of Electrical Engineering": 1,
-  "25ECE101_Applied Digital Logic Design": 7,
-  "25SCE101_Introduction to C Programming": 3,
-  "EE2002-1_Instrumentation and Measurements": 9,
-  "EE3002-1_Linear Control Systems": 6,
-  "EE2102-1_Electrical Machines I": 2,
-  "EE2103-1_Electromagnetic Fields": 5,
-  "EE3003-1_Signal Analysis and Processing": 8,
-  "EE3102-1_Power System Analysis and Stability": 1,
-  "MG1003-1_Management & Entrepreneurship": 10,
-  "EE3201-1_Switched Mode Power Converters": 6,
-  "EE2322-1_Operation and Maintenance of Solar Electrical Systems": 3,
-  "EE2311-1_Programmable Logic Controllers": 7,
-  "EE2371-1_Fuzzy Logic Control": 4,
-  "EE2503-1_Electric Vehicle Technology (Open Elective)": 2,
-  "EE2506-1_Non Conentional Energy Sources (Open Elective)": 8,
-  "HU1008-1_Life Skills for Engineers": 5
+// ==========================================
+// 1. PASTE YOUR NEW WEB APP URL BELOW
+// ==========================================
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJuGD-NqGIppUlh155nt5A3wHGg-LcW3pBQ4IEBsxGc1-T3tmQa8Zr7pvlcMVLmUSV_w/exec"; 
+
+// Global variables to hold data fetched from Google Sheets
+let UG_LIMITS = {};
+let PG_LIMITS = {};
+let LIVE_COUNTS = { ug: {}, pg: {} };
+
+// ----------------- STARTUP -----------------
+window.onload = function() {
+  fetchSystemData();
 };
 
-/*************************************************
- * LIMIT FOR PG OPTIONS
- *************************************************/
-const PG_OPTION_LIMITS = {
-  "25EVT201_Power Electronic Converters": 4,
-  "25EVT202_EV motor drives and control": 9,
-  "25EVT211_Battery Management System": 6,
-  "25EVT231_Automotive Computer Controlled Systems": 7,
-  "25EVTAU21_PCB Design": 2,
-  "No Choice": 10
-};
+// ----------------- FETCH LIMITS & COUNTS -----------------
+function fetchSystemData() {
+  const status = document.getElementById("statusBar");
+  const btn = document.getElementById("btnSubmit");
 
-const MAIN_QUESTION_TITLES = ["opt1", "opt2", "opt3"];
-const PG_QUESTION_ID = "pgOpt";
+  status.innerText = "Connecting to Database...";
 
-function populateDropdown(id, optionsObj) {
-    const sel = document.getElementById(id);
-    sel.innerHTML = `<option value="">-- Select --</option>`;
-    for (let key in optionsObj) {
-        sel.innerHTML += `<option value="${key}">${key} (Limit: ${optionsObj[key]})</option>`;
-    }
-}
+  fetch(SCRIPT_URL)
+    .then(response => response.json())
+    .then(data => {
+      // Safety Check: Did the script return the right data structure?
+      if(!data.limits) {
+        throw new Error("Backend script missing 'limits'. Check Google Script version.");
+      }
 
-populateDropdown("opt1", OPTION_LIMITS);
-populateDropdown("opt2", OPTION_LIMITS);
-populateDropdown("opt3", OPTION_LIMITS);
-populateDropdown("pgOpt", PG_OPTION_LIMITS);
+      // 1. Save Limits (From 'Limits' tab)
+      UG_LIMITS = data.limits.ug;
+      PG_LIMITS = data.limits.pg;
+      
+      // 2. Save Counts (From 'Responses' tab)
+      LIVE_COUNTS = data.counts;
 
-MAIN_QUESTION_TITLES.forEach(id => {
-    document.getElementById(id).addEventListener("change", validateSelections);
-});
-
-document.getElementById(PG_QUESTION_ID).addEventListener("change", validateSelections);
-
-function validateSelections() {
-    const msg = document.getElementById("msg");
-    msg.style.display = "none";
-
-    // Collect selections
-    let selections = MAIN_QUESTION_TITLES.map(id => document.getElementById(id).value);
-
-    // Count occurrences
-    let counts = {};
-    selections.forEach(sel => {
-        if (sel !== "") counts[sel] = (counts[sel] || 0) + 1;
+      // 3. Render Dropdowns
+      renderDropdowns();
+      
+      status.innerText = "System Ready. Limits synced with Google Sheet.";
+      status.style.color = "green";
+      
+      // Enable submit button now that data is loaded
+      btn.innerText = "Submit Selection";
+      btn.disabled = false;
+    })
+    .catch(err => {
+      console.error(err);
+      status.innerText = "Error loading data. Check Console.";
+      status.style.color = "red";
+      document.getElementById("msg").innerHTML = "<span class='error'>Failed to load subject limits.</span>";
     });
-
-    // Check limits
-    for (let opt in counts) {
-        if (counts[opt] > OPTION_LIMITS[opt]) {
-            msg.innerHTML = `❌ "${opt}" selected ${counts[opt]} times, but limit is ${OPTION_LIMITS[opt]}.`;
-            msg.style.display = "block";
-            return false;
-        }
-    }
-
-    return true;
 }
 
-function submitForm() {
-    if (!validateSelections()) {
-        alert("Please fix the errors before submitting.");
-        return;
-    }
+// ----------------- RENDER DROPDOWNS -----------------
+function renderDropdowns() {
+  // Populate UG Dropdowns
+  ["opt1", "opt2", "opt3"].forEach(id => populateSelect(id, UG_LIMITS, LIVE_COUNTS.ug));
+  // Populate PG Dropdown
+  populateSelect("pg", PG_LIMITS, LIVE_COUNTS.pg);
+}
 
-    alert("Form submitted successfully!");
+function populateSelect(id, limits, counts) {
+  const select = document.getElementById(id);
+  const currentSelection = select.value;
+  
+  select.innerHTML = '<option value="">-- Select Subject --</option>';
+
+  // Iterate over limits (Dynamic list from sheet)
+  for (const [subject, limit] of Object.entries(limits)) {
+    const used = counts[subject] || 0;
+    const option = document.createElement("option");
+    option.value = subject;
+    
+    if (used >= limit) {
+      option.text = `❌ ${subject} (FULL)`;
+      option.disabled = true;
+    } else {
+      option.text = `${subject} (${limit - used} left)`;
+      option.disabled = false;
+    }
+    
+    select.appendChild(option);
+  }
+  
+  // Restore selection if valid
+  if(currentSelection) {
+    const optToCheck = select.querySelector(`option[value="${currentSelection}"]`);
+    if(optToCheck && !optToCheck.disabled) select.value = currentSelection;
+    else select.value = "";
+  }
+}
+
+// ----------------- CHECK EMAIL HISTORY -----------------
+function checkHistory() {
+  const email = document.getElementById("email").value.trim();
+  if(!email || !email.includes("@")) return;
+
+  const loader = document.getElementById("emailLoader");
+  const btn = document.getElementById("btnSubmit");
+  
+  loader.style.display = "block";
+  btn.disabled = true; // Block submit while checking
+
+  fetch(`${SCRIPT_URL}?check_email=${encodeURIComponent(email)}`)
+    .then(res => res.json())
+    .then(result => {
+      loader.style.display = "none";
+      if(result.found) {
+        // If found, immediately show summary
+        showSummaryPage(result.data, true);
+      } else {
+        // If not found, allow user to continue
+        btn.disabled = false;
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      loader.style.display = "none";
+      btn.disabled = false; // Allow usage on error to avoid blocking user
+    });
+}
+
+// ----------------- CHECK DUPLICATES -----------------
+function checkDupes() {
+  const s1 = document.getElementById("opt1").value;
+  const s2 = document.getElementById("opt2").value;
+  const s3 = document.getElementById("opt3").value;
+  const btn = document.getElementById("btnSubmit");
+  const msg = document.getElementById("msg");
+
+  if ((s1 && s2 && s1 === s2) || (s1 && s3 && s1 === s3) || (s2 && s3 && s2 === s3)) {
+    msg.innerHTML = "<span class='error'>Duplicate subjects selected!</span>";
+    btn.disabled = true;
+  } else {
+    msg.innerHTML = "";
+    btn.disabled = false;
+  }
+}
+
+// ----------------- SHOW SUMMARY PAGE -----------------
+function showSummaryPage(data, isDuplicate) {
+  document.getElementById("formContainer").style.display = "none";
+  document.getElementById("thankYouContainer").style.display = "block";
+  
+  document.getElementById("tyName").innerText = data.name;
+  document.getElementById("tyOpt1").innerText = data.opt1;
+  document.getElementById("tyOpt2").innerText = data.opt2;
+  document.getElementById("tyOpt3").innerText = data.opt3;
+  document.getElementById("tyPg").innerText = data.pg;
+
+  if(isDuplicate) {
+    document.getElementById("tyIcon").innerText = "⚠️";
+    document.getElementById("tyIcon").className = "warning-icon";
+    document.getElementById("tyTitle").innerText = "Already Submitted";
+    document.getElementById("tyMessage").innerHTML = "You have already submitted this form.<br>Here are your recorded choices:";
+    document.getElementById("tyMessage").style.color = "#d93025";
+  } else {
+    document.getElementById("tyIcon").innerText = "✔";
+    document.getElementById("tyIcon").className = "checkmark";
+    document.getElementById("tyTitle").innerText = "Submission Successful!";
+    document.getElementById("tyMessage").innerText = "Your choices have been saved.";
+    document.getElementById("tyMessage").style.color = "#666";
+  }
+}
+
+// ----------------- SUBMIT FORM -----------------
+function submitForm() {
+  const msg = document.getElementById("msg");
+  const btn = document.getElementById("btnSubmit");
+  
+  const payload = {
+    name: document.getElementById("name").value,
+    email: document.getElementById("email").value,
+    opt1: document.getElementById("opt1").value,
+    opt2: document.getElementById("opt2").value,
+    opt3: document.getElementById("opt3").value,
+    pg: document.getElementById("pg").value
+  };
+
+  // 1. Basic Validation
+  if(!payload.name || !payload.email || !payload.opt1 || !payload.opt2 || !payload.opt3 || !payload.pg){
+    msg.innerHTML = "<span class='error'>Please fill all fields.</span>";
+    return;
+  }
+  if(!payload.email.endsWith("@nitte.edu.in")){
+    msg.innerHTML = "<span class='error'>Only @gmail.com emails allowed.</span>";
+    return;
+  }
+
+  // 2. Client-Side Capacity Check
+  const choices = [payload.opt1, payload.opt2, payload.opt3];
+  for(let c of choices){
+     if((LIVE_COUNTS.ug[c]||0) >= (UG_LIMITS[c]||0)){
+        msg.innerHTML = `<span class='error'>Subject Full: ${c}. Please refresh.</span>`;
+        return;
+     }
+  }
+  if((LIVE_COUNTS.pg[payload.pg]||0) >= (PG_LIMITS[payload.pg]||0)){
+     msg.innerHTML = `<span class='error'>Subject Full: ${payload.pg}. Please refresh.</span>`;
+     return;
+  }
+
+  // 3. Send Data
+  btn.disabled = true;
+  btn.innerText = "Submitting...";
+  msg.innerHTML = "";
+
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify(payload)
+  })
+  .then(() => {
+    // 4. On Success, show summary
+    showSummaryPage(payload, false);
+  })
+  .catch(() => {
+    msg.innerHTML = "<span class='error'>Submission failed. Check connection.</span>";
+    btn.disabled = false;
+    btn.innerText = "Submit Selection";
+  });
 }
 </script>
 
