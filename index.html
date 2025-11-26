@@ -1,96 +1,186 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Subject Selection Form</title>
-<style>
-  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; }
-  .container { max-width: 600px; margin: auto; background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-  h2 { text-align: center; color: #333; margin-top: 0; }
-  .field { margin-bottom: 20px; }
-  label { font-weight: 600; display: block; margin-bottom: 8px; color: #444; }
-  select, input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-  
-  /* Disabled Option Style */
-  select:disabled, option:disabled { 
-    background-color: #e9e9e9; 
-    color: #a1a1a1; 
-    font-style: italic; 
-    cursor: not-allowed;
-  }
+  <meta charset="UTF-8" />
+  <title>Subject Selection Form</title>
 
-  button { width: 100%; padding: 14px; background: #007bff; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background 0.3s; }
-  button:hover { background: #0056b3; }
-  button:disabled { background: #ccc; cursor: not-allowed; }
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      padding: 20px;
+    }
 
-  .msg { margin-top: 15px; text-align: center; font-weight: bold; min-height: 20px; }
-  .error { color: #d93025; }
-  .success { color: #188038; }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
 
-  .status-bar { font-size: 13px; color: #666; text-align: center; margin-bottom: 20px; background: #e8f0fe; padding: 8px; border-radius: 6px; }
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-top: 0;
+    }
 
-  /* USER IDENTITY BOX */
-  .user-badge {
-    background: #e3f2fd;
-    border: 1px solid #90caf9;
-    padding: 12px;
-    border-radius: 6px;
-    color: #0d47a1;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .user-badge span { font-weight: bold; }
+    .field { margin-bottom: 20px; }
 
-  /* THANK YOU / SUMMARY STYLES */
-  .thank-you-box { text-align: center; display: none; }
-  .checkmark { font-size: 50px; color: #28a745; margin-bottom: 10px; display: block; }
-  .warning-icon { font-size: 50px; color: #ff9800; margin-bottom: 10px; display: block; }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+      color: #444;
+    }
 
-  .ty-title { font-size: 24px; color: #333; margin-bottom: 5px; }
-  .ty-text { color: #666; font-size: 16px; margin-bottom: 20px; }
+    select, input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
 
-  .summary-card {
-    background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 15px; text-align: left; margin-top: 20px; font-size: 14px;
-  }
-  .summary-item { margin-bottom: 10px; border-bottom: 1px dashed #ddd; padding-bottom: 5px; }
-  .summary-item:last-child { border-bottom: none; margin-bottom: 0; }
-  .summary-label { font-weight: bold; color: #555; display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .summary-val { color: #000; display: block; margin-top: 2px; }
+    select:disabled,
+    option:disabled {
+      background-color: #e9e9e9;
+      color: #a1a1a1;
+      font-style: italic;
+      cursor: not-allowed;
+    }
 
-  .footer { text-align: center; margin-top: 30px; margin-bottom: 10px; font-size: 12px; color: #888; font-weight: 500; }
-  
-  /* Loading Overlay (Optional but nice) */
-  .loading-overlay { 
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-      background: rgba(255,255,255,0.9); z-index: 999; 
-      display: flex; align-items: center; justify-content: center; flex-direction: column;
-  }
-  .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-</style>
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+
+    button:hover { background: #0056b3; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+
+    .msg {
+      margin-top: 15px;
+      text-align: center;
+      font-weight: bold;
+      min-height: 20px;
+    }
+
+    .error { color: #d93025; }
+    .success { color: #188038; }
+
+    .status-bar {
+      font-size: 13px;
+      color: #666;
+      text-align: center;
+      margin-bottom: 20px;
+      background: #e8f0fe;
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    .email-loader {
+      font-size: 12px;
+      color: #007bff;
+      display: none;
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    .thank-you-box {
+      text-align: center;
+      display: none;
+    }
+
+    .checkmark {
+      font-size: 50px;
+      color: #28a745;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .warning-icon {
+      font-size: 50px;
+      color: #ff9800;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .ty-title {
+      font-size: 24px;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .ty-text {
+      color: #666;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .summary-card {
+      background: #f9f9f9;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: left;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .summary-item {
+      margin-bottom: 10px;
+      border-bottom: 1px dashed #ddd;
+      padding-bottom: 5px;
+    }
+
+    .summary-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .summary-label {
+      font-weight: bold;
+      color: #555;
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .summary-val {
+      color: #000;
+      display: block;
+      margin-top: 2px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: #888;
+      font-weight: 500;
+    }
+  </style>
 </head>
-<body>
 
-<div id="mainLoader" class="loading-overlay">
-  <div class="spinner"></div>
-  <p style="margin-top:15px; font-weight:600; color:#555;">Authenticating...</p>
-</div>
+<body>
 
 <div class="container" id="formContainer">
   <h2>Subject Selection Form</h2>
   <h4 style="text-align:center; color:#555; margin-top:-15px;">Department of EEE, NMAMIT, Nitte</h4>
-  
-  <div id="statusBar" class="status-bar">System initializing...</div>
 
-  <div class="field">
-    <label>Logged in as:</label>
-    <div class="user-badge">
-        <span id="displayEmail">Loading...</span>
-        <small style="color:#0d47a1;">Verified</small>
-    </div>
-  </div>
+  <div id="statusBar" class="status-bar">Initializing System...</div>
 
   <div class="field">
     <label>Name</label>
@@ -98,44 +188,54 @@
   </div>
 
   <div class="field">
+    <label>Email</label>
+    <small style="color:#666; display:block; margin-bottom:5px;">Enter a valid @nitte.edu.in email to unlock subjects.</small>
+    <input type="email" id="email" placeholder="example@nitte.edu.in" onblur="checkHistory()">
+    <div id="emailLoader" class="email-loader">Verifying email...</div>
+  </div>
+
+  <div class="field">
     <label>Priority 1</label>
-    <select id="opt1" onchange="checkDupes()" disabled><option>Loading subjects...</option></select>
+    <select id="opt1" onchange="checkDupes()" disabled>
+      <option>Enter Email First</option>
+    </select>
   </div>
 
   <div class="field">
     <label>Priority 2</label>
-    <select id="opt2" onchange="checkDupes()" disabled><option>Loading subjects...</option></select>
+    <select id="opt2" onchange="checkDupes()" disabled>
+      <option>Enter Email First</option>
+    </select>
   </div>
 
   <div class="field">
     <label>Priority 3</label>
-    <select id="opt3" onchange="checkDupes()" disabled><option>Loading subjects...</option></select>
+    <select id="opt3" onchange="checkDupes()" disabled>
+      <option>Enter Email First</option>
+    </select>
   </div>
 
   <div class="field">
     <label>PG Subject</label>
-    <select id="pg" disabled><option>Loading subjects...</option></select>
+    <select id="pg" disabled>
+      <option>Enter Email First</option>
+    </select>
   </div>
 
-  <button id="btnSubmit" onclick="submitForm()" disabled>Loading...</button>
+  <button id="btnSubmit" onclick="submitForm()" disabled>Loading Data...</button>
   <div id="msg" class="msg"></div>
 </div>
 
 <div class="container thank-you-box" id="thankYouContainer">
   <span id="tyIcon" class="checkmark">✔</span>
-  
   <h2 class="ty-title" id="tyTitle">Submission Successful!</h2>
-  
+
   <p class="ty-text">
     <span id="tyMessage">Your choices have been saved.</span><br>
-    User: <span id="tyEmail" style="font-weight:bold;"></span>
+    Name: <span id="tyName" style="font-weight:bold;"></span>
   </p>
 
   <div class="summary-card">
-    <div class="summary-item">
-        <span class="summary-label">Student Name</span>
-        <span class="summary-val" id="tyName"></span>
-      </div>
     <div class="summary-item">
       <span class="summary-label">Priority 1</span>
       <span class="summary-val" id="tyOpt1"></span>
@@ -154,9 +254,7 @@
     </div>
   </div>
 
-  <p style="margin-top:20px; font-size:13px; color:#888;">
-    You can close this tab now.
-  </p>
+  <p style="margin-top:20px; font-size:13px; color:#888;">You can close this tab now.</p>
 </div>
 
 <div class="footer">
@@ -164,198 +262,242 @@
 </div>
 
 <script>
-// ==========================================
-// CLIENT SIDE SCRIPT (GOOGLE AUTH VER.)
-// ==========================================
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzsLCSII04o71fUS9AkzT8QKPuFkHQmGsQIv3Ag8hsg6Mt2j7ZdRYGLTOIufr83ntI9hg/exec";
 
-// Global Data Storage
-let UG_LIMITS = {};
-let PG_LIMITS = {};
-let LIVE_COUNTS = {};
+  let UG_LIMITS = {};
+  let PG_LIMITS = {};
+  let LIVE_COUNTS = { ug: {}, pg: {} };
 
-// 1. INITIALIZE ON LOAD
-window.onload = function() {
-  // Call the backend function 'getInitialData'
-  google.script.run
-    .withSuccessHandler(onSystemReady)
-    .withFailureHandler(onSystemError)
-    .getInitialData();
-};
+  window.onload = () => fetchSystemData();
 
-// 2. SUCCESS HANDLER: SYSTEM READY
-function onSystemReady(data) {
-  const loader = document.getElementById("mainLoader");
-  const status = document.getElementById("statusBar");
-  
-  // Hide full screen loader
-  loader.style.display = "none";
+  function fetchSystemData() {
+    const status = document.getElementById("statusBar");
+    const btn = document.getElementById("btnSubmit");
 
-  if (data.status === "error") {
-    // Usually invalid domain
-    onSystemError(data.message);
-    return;
+    status.innerText = "Connecting to Database...";
+
+    fetch(SCRIPT_URL)
+      .then(r => r.json())
+      .then(data => {
+        UG_LIMITS = data.limits.ug;
+        PG_LIMITS = data.limits.pg;
+        LIVE_COUNTS = data.counts;
+
+        renderDropdowns();
+        status.innerText = "System Ready. Please enter your details.";
+        status.style.color = "green";
+
+        btn.innerText = "Submit Selection";
+        btn.disabled = false;
+      })
+      .catch(err => {
+        console.error(err);
+        status.innerText = "Error loading data.";
+        status.style.color = "red";
+        document.getElementById("msg").innerHTML =
+          "<span class='error'>Failed to load subject limits.</span>";
+      });
   }
 
-  // Set Email
-  document.getElementById("displayEmail").innerText = data.email;
-
-  // CHECK: Did user already submit?
-  if (data.history && data.history.found) {
-    // Show Summary immediately
-    const summaryData = { ...data.history.data, email: data.email };
-    showSummaryPage(summaryData, true);
-    return; 
+  function renderDropdowns() {
+    ["opt1", "opt2", "opt3"].forEach(id =>
+      populateSelect(id, UG_LIMITS, LIVE_COUNTS.ug)
+    );
+    populateSelect("pg", PG_LIMITS, LIVE_COUNTS.pg);
   }
 
-  // Setup Limits
-  UG_LIMITS = data.limits.ug; 
-  PG_LIMITS = data.limits.pg;
-  LIVE_COUNTS = data.counts.ug; // Note: structure from backend might separate ug/pg counts
-  const pgCounts = data.counts.pg;
+  function populateSelect(id, limits, counts) {
+    const select = document.getElementById(id);
+    const currentSelection = select.value;
 
-  // Populate Dropdowns
-  renderDropdowns(LIVE_COUNTS, pgCounts);
+    select.innerHTML = '<option value="">-- Select Subject --</option>';
 
-  // Enable Form
-  toggleDropdowns(true);
-  document.getElementById("btnSubmit").disabled = false;
-  document.getElementById("btnSubmit").innerText = "Submit Selection";
-  status.innerText = "System Ready. Please make your selection.";
-  status.style.color = "green";
-}
+    for (const [subject, limit] of Object.entries(limits)) {
+      const used = counts[subject] || 0;
+      const option = document.createElement("option");
 
-// 3. ERROR HANDLER
-function onSystemError(error) {
-  document.getElementById("mainLoader").style.display = "none";
-  document.getElementById("formContainer").innerHTML = `
-    <h2 style='color:#d93025'>Access Error</h2>
-    <p style='text-align:center;'>${error}</p>
-    <p style='text-align:center; color:#666;'>Try reloading. If the issue persists, ensure you are signed in with @nitte.edu.in</p>
-  `;
-}
+      option.value = subject;
 
-// 4. RENDER DROPDOWNS
-function renderDropdowns(ugCounts, pgCounts) {
-  ["opt1", "opt2", "opt3"].forEach(id => populateSelect(id, UG_LIMITS, ugCounts));
-  populateSelect("pg", PG_LIMITS, pgCounts);
-}
+      if (used >= limit) {
+        option.text = `❌ ${subject} (FULL)`;
+        option.disabled = true;
+      } else {
+        option.text = `${subject} (${limit - used} left)`;
+      }
 
-function populateSelect(id, limits, counts) {
-  const select = document.getElementById(id);
-  select.innerHTML = '<option value="">-- Select Subject --</option>';
-
-  for (const [subject, limit] of Object.entries(limits)) {
-    const used = counts[subject] || 0;
-    const option = document.createElement("option");
-    option.value = subject;
-    
-    if (used >= limit) {
-      option.text = `❌ ${subject} (FULL)`;
-      option.disabled = true;
-    } else {
-      option.text = `${subject} (${limit - used} left)`;
+      select.appendChild(option);
     }
-    
-    select.appendChild(option);
+
+    if (currentSelection) {
+      const opt = select.querySelector(
+        `option[value="${currentSelection}"]`
+      );
+      select.value = opt && !opt.disabled ? currentSelection : "";
+    }
   }
-}
 
-// 5. CHECK DUPLICATES
-function checkDupes() {
-  const s1 = document.getElementById("opt1").value;
-  const s2 = document.getElementById("opt2").value;
-  const s3 = document.getElementById("opt3").value;
-  const btn = document.getElementById("btnSubmit");
-  const msg = document.getElementById("msg");
+  function toggleDropdowns(enable) {
+    ["opt1", "opt2", "opt3", "pg"].forEach(id => {
+      document.getElementById(id).disabled = !enable;
+    });
+  }
 
-  if ((s1 && s2 && s1 === s2) || (s1 && s3 && s1 === s3) || (s2 && s3 && s2 === s3)) {
-    msg.innerHTML = "<span class='error'>Duplicate subjects selected!</span>";
-    btn.disabled = true;
-  } else {
+  function checkHistory() {
+    const email = document.getElementById("email").value.trim();
+    const msg = document.getElementById("msg");
+    const loader = document.getElementById("emailLoader");
+    const btn = document.getElementById("btnSubmit");
+
+    toggleDropdowns(false);
     msg.innerHTML = "";
-    btn.disabled = false;
+
+    if (!email) return;
+
+    if (!email.endsWith("@nitte.edu.in")) {
+      msg.innerHTML =
+        "<span class='error'>Invalid email. Use @nitte.edu.in</span>";
+      return;
+    }
+
+    loader.style.display = "block";
+    btn.disabled = true;
+
+    fetch(`${SCRIPT_URL}?check_email=${encodeURIComponent(email)}`)
+      .then(res => res.json())
+      .then(result => {
+        loader.style.display = "none";
+        btn.disabled = false;
+
+        if (result.found) {
+          showSummaryPage(result.data, true);
+        } else {
+          toggleDropdowns(true);
+          msg.innerHTML =
+            "<span class='success'>Email verified. Options unlocked.</span>";
+        }
+      })
+      .catch(() => {
+        loader.style.display = "none";
+        btn.disabled = false;
+        msg.innerHTML =
+          "<span class='error'>Error verifying email.</span>";
+      });
   }
-}
 
-// 6. TOGGLE UI
-function toggleDropdowns(enable) {
-  ["opt1", "opt2", "opt3", "pg"].forEach(id => document.getElementById(id).disabled = !enable);
-}
+  function checkDupes() {
+    const s1 = document.getElementById("opt1").value;
+    const s2 = document.getElementById("opt2").value;
+    const s3 = document.getElementById("opt3").value;
+    const msg = document.getElementById("msg");
+    const btn = document.getElementById("btnSubmit");
 
-// 7. SUBMIT FORM
-function submitForm() {
-  const btn = document.getElementById("btnSubmit");
-  const msg = document.getElementById("msg");
-
-  // Gather Data
-  const formData = {
-    name: document.getElementById("name").value,
-    opt1: document.getElementById("opt1").value,
-    opt2: document.getElementById("opt2").value,
-    opt3: document.getElementById("opt3").value,
-    pg: document.getElementById("pg").value
-  };
-
-  // Validation
-  if(!formData.name || !formData.opt1 || !formData.opt2 || !formData.opt3 || !formData.pg){
-    msg.innerHTML = "<span class='error'>Please fill all fields.</span>";
-    return;
+    if (
+      (s1 && s2 && s1 === s2) ||
+      (s1 && s3 && s1 === s3) ||
+      (s2 && s3 && s2 === s3)
+    ) {
+      msg.innerHTML = "<span class='error'>Duplicate subjects selected!</span>";
+      btn.disabled = true;
+    } else {
+      msg.innerHTML = "";
+      btn.disabled = false;
+    }
   }
 
-  // Confirmation
-  if(!confirm("Confirm submission? You cannot change this later.")) return;
+  function showSummaryPage(data, isDuplicate) {
+    document.getElementById("formContainer").style.display = "none";
+    document.getElementById("thankYouContainer").style.display = "block";
 
-  // Lock UI
-  btn.disabled = true;
-  btn.innerText = "Submitting...";
-  msg.innerHTML = "Verifying availability...";
+    document.getElementById("tyName").innerText = data.name;
+    document.getElementById("tyOpt1").innerText = data.opt1;
+    document.getElementById("tyOpt2").innerText = data.opt2;
+    document.getElementById("tyOpt3").innerText = data.opt3;
+    document.getElementById("tyPg").innerText = data.pg;
 
-  // Send to Backend
-  google.script.run
-    .withSuccessHandler(function(response) {
-       if(response.status === 'success') {
-         // Success
-         const email = document.getElementById("displayEmail").innerText;
-         const summaryData = { ...formData, email: email };
-         showSummaryPage(summaryData, false);
-       } else {
-         // Error (e.g. subject full)
-         msg.innerHTML = `<span class='error'>${response.message}</span>`;
-         btn.disabled = false;
-         btn.innerText = "Submit Selection";
-         // Optional: Reload data here if you want to refresh counts
-       }
+    if (isDuplicate) {
+      document.getElementById("tyIcon").innerText = "⚠️";
+      document.getElementById("tyIcon").className = "warning-icon";
+      document.getElementById("tyTitle").innerText = "Already Submitted";
+      document.getElementById("tyMessage").innerHTML =
+        "You have already submitted this form.<br>Contact admin to edit. Here are your recorded choices:";
+      document.getElementById("tyMessage").style.color = "#d93025";
+    } else {
+      document.getElementById("tyIcon").innerText = "✔";
+      document.getElementById("tyIcon").className = "checkmark";
+      document.getElementById("tyTitle").innerText = "Submission Successful!";
+      document.getElementById("tyMessage").innerText =
+        "Your choices have been saved.";
+      document.getElementById("tyMessage").style.color = "#666";
+    }
+  }
+
+  function submitForm() {
+    const msg = document.getElementById("msg");
+    const btn = document.getElementById("btnSubmit");
+
+    const payload = {
+      name: document.getElementById("name").value,
+      email: document.getElementById("email").value,
+      opt1: document.getElementById("opt1").value,
+      opt2: document.getElementById("opt2").value,
+      opt3: document.getElementById("opt3").value,
+      pg: document.getElementById("pg").value
+    };
+
+    if (
+      !payload.name ||
+      !payload.email ||
+      !payload.opt1 ||
+      !payload.opt2 ||
+      !payload.opt3 ||
+      !payload.pg
+    ) {
+      msg.innerHTML =
+        "<span class='error'>Please fill all fields.</span>";
+      return;
+    }
+
+    if (!payload.email.endsWith("@nitte.edu.in")) {
+      msg.innerHTML =
+        "<span class='error'>Only @nitte.edu.in emails allowed.</span>";
+      return;
+    }
+
+    if (
+      !confirm(
+        "Are you sure you want to submit?\nNO EDIT OPTION. Double check choices."
+      )
+    ) {
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "Verifying & Submitting...";
+    msg.innerHTML =
+      "<span style='color:blue'>Verifying availability...</span>";
+
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
     })
-    .withFailureHandler(function(e) {
-        msg.innerHTML = "<span class='error'>Network Error. Try again.</span>";
-        console.error(e);
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === "success") {
+          showSummaryPage(payload, false);
+        } else {
+          msg.innerHTML = `<span class='error'>${data.message}</span>`;
+          btn.disabled = false;
+          btn.innerText = "Submit Selection";
+          fetchSystemData();
+        }
+      })
+      .catch(() => {
+        msg.innerHTML =
+          "<span class='error'>Submission failed. Network error.</span>";
         btn.disabled = false;
         btn.innerText = "Submit Selection";
-    })
-    .processFormSubmission(formData);
-}
-
-// 8. SHOW SUMMARY
-function showSummaryPage(data, isDuplicate) {
-  document.getElementById("formContainer").style.display = "none";
-  document.getElementById("thankYouContainer").style.display = "block";
-  document.getElementById("mainLoader").style.display = "none";
-
-  document.getElementById("tyName").innerText = data.name || "Student";
-  document.getElementById("tyEmail").innerText = data.email;
-  document.getElementById("tyOpt1").innerText = data.opt1;
-  document.getElementById("tyOpt2").innerText = data.opt2;
-  document.getElementById("tyOpt3").innerText = data.opt3;
-  document.getElementById("tyPg").innerText = data.pg;
-
-  if(isDuplicate) {
-    document.getElementById("tyTitle").innerText = "Already Submitted";
-    document.getElementById("tyMessage").innerHTML = "You have already filled this form.<br>Here are your recorded choices:";
-    document.getElementById("tyMessage").style.color = "#d93025";
-    document.getElementById("tyIcon").innerText = "⚠️";
-    document.getElementById("tyIcon").className = "warning-icon";
+      });
   }
-}
 </script>
 
 </body>
