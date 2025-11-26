@@ -327,7 +327,6 @@ function showSummaryPage(data, isDuplicate) {
   }
 }
 
-// ----------------- SUBMIT FORM -----------------
 function submitForm() {
   const msg = document.getElementById("msg");
   const btn = document.getElementById("btnSubmit");
@@ -352,41 +351,38 @@ function submitForm() {
     return;
   }
 
-  // 2. CONFIRMATION POPUP (New Feature)
+  // 2. CONFIRMATION POPUP
   const userConfirmed = confirm("Are you sure you want to submit?\n\nNO EDIT OPTION is provided later. Please double check your choices.");
-  if (!userConfirmed) {
-    return; // Stop here if user clicks Cancel
-  }
+  if (!userConfirmed) return;
 
-  // 3. Client-Side Capacity Check
-  const choices = [payload.opt1, payload.opt2, payload.opt3];
-  for(let c of choices){
-     if((LIVE_COUNTS.ug[c]||0) >= (UG_LIMITS[c]||0)){
-        msg.innerHTML = `<span class='error'>Subject Full: ${c}. Please refresh.</span>`;
-        return;
-     }
-  }
-  if((LIVE_COUNTS.pg[payload.pg]||0) >= (PG_LIMITS[payload.pg]||0)){
-     msg.innerHTML = `<span class='error'>Subject Full: ${payload.pg}. Please refresh.</span>`;
-     return;
-  }
-
-  // 4. Send Data
+  // 3. SEND DATA (With Server-Side Verification)
   btn.disabled = true;
-  btn.innerText = "Submitting...";
-  msg.innerHTML = "";
+  btn.innerText = "Verifying & Submitting...";
+  msg.innerHTML = "<span style='color:blue'>Verifying availability...</span>";
 
+  // IMPORTANT: Removed 'mode: no-cors' to allow reading the error message
   fetch(SCRIPT_URL, {
     method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "text/plain" },
     body: JSON.stringify(payload)
   })
-  .then(() => {
-    showSummaryPage(payload, false);
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === "success") {
+      // Success! Show summary
+      showSummaryPage(payload, false);
+    } else {
+      // Error (Subject Full or System Error)
+      msg.innerHTML = `<span class='error'>${data.message}</span>`;
+      btn.disabled = false;
+      btn.innerText = "Submit Selection";
+      
+      // Optional: Refresh limits so the dropdowns update visually
+      fetchSystemData(); 
+    }
   })
-  .catch(() => {
-    msg.innerHTML = "<span class='error'>Submission failed. Check connection.</span>";
+  .catch(error => {
+    console.error(error);
+    msg.innerHTML = "<span class='error'>Submission failed. Network error or script permission issue.</span>";
     btn.disabled = false;
     btn.innerText = "Submit Selection";
   });
