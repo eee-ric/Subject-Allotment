@@ -29,8 +29,19 @@
 
   .status-bar { font-size: 13px; color: #666; text-align: center; margin-bottom: 20px; background: #e8f0fe; padding: 8px; border-radius: 6px; }
 
-  /* EMAIL LOADER */
-  .email-loader { font-size: 12px; color: #007bff; display: none; margin-top: 4px; font-style: italic; }
+  /* USER IDENTITY BOX */
+  .user-badge {
+    background: #e3f2fd;
+    border: 1px solid #90caf9;
+    padding: 12px;
+    border-radius: 6px;
+    color: #0d47a1;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .user-badge span { font-weight: bold; }
 
   /* THANK YOU / SUMMARY STYLES */
   .thank-you-box { text-align: center; display: none; }
@@ -48,24 +59,38 @@
   .summary-label { font-weight: bold; color: #555; display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
   .summary-val { color: #000; display: block; margin-top: 2px; }
 
-  /* FOOTER STYLE */
-  .footer {
-    text-align: center;
-    margin-top: 30px;
-    margin-bottom: 10px;
-    font-size: 12px;
-    color: #888;
-    font-weight: 500;
+  .footer { text-align: center; margin-top: 30px; margin-bottom: 10px; font-size: 12px; color: #888; font-weight: 500; }
+  
+  /* Loading Overlay (Optional but nice) */
+  .loading-overlay { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: rgba(255,255,255,0.9); z-index: 999; 
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
   }
+  .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
+
+<div id="mainLoader" class="loading-overlay">
+  <div class="spinner"></div>
+  <p style="margin-top:15px; font-weight:600; color:#555;">Authenticating...</p>
+</div>
 
 <div class="container" id="formContainer">
   <h2>Subject Selection Form</h2>
   <h4 style="text-align:center; color:#555; margin-top:-15px;">Department of EEE, NMAMIT, Nitte</h4>
   
-  <div id="statusBar" class="status-bar">Initializing System...</div>
+  <div id="statusBar" class="status-bar">System initializing...</div>
+
+  <div class="field">
+    <label>Logged in as:</label>
+    <div class="user-badge">
+        <span id="displayEmail">Loading...</span>
+        <small style="color:#0d47a1;">Verified</small>
+    </div>
+  </div>
 
   <div class="field">
     <label>Name</label>
@@ -73,33 +98,26 @@
   </div>
 
   <div class="field">
-    <label>Email</label>
-    <small style="color:#666; display:block; margin-bottom:5px;">Enter a valid @nitte.edu.in email to unlock subjects.</small>
-    <input type="email" id="email" placeholder="example@nitte.edu.in" onblur="checkHistory()">
-    <div id="emailLoader" class="email-loader">Verifying email...</div>
-  </div>
-
-  <div class="field">
     <label>Priority 1</label>
-    <select id="opt1" onchange="checkDupes()" disabled><option>Enter Email First</option></select>
+    <select id="opt1" onchange="checkDupes()" disabled><option>Loading subjects...</option></select>
   </div>
 
   <div class="field">
     <label>Priority 2</label>
-    <select id="opt2" onchange="checkDupes()" disabled><option>Enter Email First</option></select>
+    <select id="opt2" onchange="checkDupes()" disabled><option>Loading subjects...</option></select>
   </div>
 
   <div class="field">
     <label>Priority 3</label>
-    <select id="opt3" onchange="checkDupes()" disabled><option>Enter Email First</option></select>
+    <select id="opt3" onchange="checkDupes()" disabled><option>Loading subjects...</option></select>
   </div>
 
   <div class="field">
     <label>PG Subject</label>
-    <select id="pg" disabled><option>Enter Email First</option></select>
+    <select id="pg" disabled><option>Loading subjects...</option></select>
   </div>
 
-  <button id="btnSubmit" onclick="submitForm()" disabled>Loading Data...</button>
+  <button id="btnSubmit" onclick="submitForm()" disabled>Loading...</button>
   <div id="msg" class="msg"></div>
 </div>
 
@@ -110,10 +128,14 @@
   
   <p class="ty-text">
     <span id="tyMessage">Your choices have been saved.</span><br>
-    Name: <span id="tyName" style="font-weight:bold;"></span>
+    User: <span id="tyEmail" style="font-weight:bold;"></span>
   </p>
 
   <div class="summary-card">
+    <div class="summary-item">
+        <span class="summary-label">Student Name</span>
+        <span class="summary-val" id="tyName"></span>
+      </div>
     <div class="summary-item">
       <span class="summary-label">Priority 1</span>
       <span class="summary-val" id="tyOpt1"></span>
@@ -143,65 +165,83 @@
 
 <script>
 // ==========================================
-// 1. YOUR SCRIPT URL
+// CLIENT SIDE SCRIPT (GOOGLE AUTH VER.)
 // ==========================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJuGD-NqGIppUlh155nt5A3wHGg-LcW3pBQ4IEBsxGc1-T3tmQa8Zr7pvlcMVLmUSV_w/exec"; 
 
-// Global variables to hold data fetched from Google Sheets
+// Global Data Storage
 let UG_LIMITS = {};
 let PG_LIMITS = {};
-let LIVE_COUNTS = { ug: {}, pg: {} };
+let LIVE_COUNTS = {};
 
-// ----------------- STARTUP -----------------
+// 1. INITIALIZE ON LOAD
 window.onload = function() {
-  fetchSystemData();
+  // Call the backend function 'getInitialData'
+  google.script.run
+    .withSuccessHandler(onSystemReady)
+    .withFailureHandler(onSystemError)
+    .getInitialData();
 };
 
-// ----------------- FETCH LIMITS & COUNTS -----------------
-function fetchSystemData() {
+// 2. SUCCESS HANDLER: SYSTEM READY
+function onSystemReady(data) {
+  const loader = document.getElementById("mainLoader");
   const status = document.getElementById("statusBar");
-  const btn = document.getElementById("btnSubmit");
+  
+  // Hide full screen loader
+  loader.style.display = "none";
 
-  status.innerText = "Connecting to Database...";
+  if (data.status === "error") {
+    // Usually invalid domain
+    onSystemError(data.message);
+    return;
+  }
 
-  fetch(SCRIPT_URL)
-    .then(response => response.json())
-    .then(data => {
-      if(!data.limits) {
-        throw new Error("Backend script missing 'limits'. Check Google Script version.");
-      }
+  // Set Email
+  document.getElementById("displayEmail").innerText = data.email;
 
-      UG_LIMITS = data.limits.ug;
-      PG_LIMITS = data.limits.pg;
-      LIVE_COUNTS = data.counts;
+  // CHECK: Did user already submit?
+  if (data.history && data.history.found) {
+    // Show Summary immediately
+    const summaryData = { ...data.history.data, email: data.email };
+    showSummaryPage(summaryData, true);
+    return; 
+  }
 
-      // Note: We populate them, but they remain DISABLED in HTML until email check
-      renderDropdowns();
-      
-      status.innerText = "System Ready. Please enter your details.";
-      status.style.color = "green";
-      
-      btn.innerText = "Submit Selection";
-      btn.disabled = false;
-    })
-    .catch(err => {
-      console.error(err);
-      status.innerText = "Error loading data. Check Console.";
-      status.style.color = "red";
-      document.getElementById("msg").innerHTML = "<span class='error'>Failed to load subject limits.</span>";
-    });
+  // Setup Limits
+  UG_LIMITS = data.limits.ug; 
+  PG_LIMITS = data.limits.pg;
+  LIVE_COUNTS = data.counts.ug; // Note: structure from backend might separate ug/pg counts
+  const pgCounts = data.counts.pg;
+
+  // Populate Dropdowns
+  renderDropdowns(LIVE_COUNTS, pgCounts);
+
+  // Enable Form
+  toggleDropdowns(true);
+  document.getElementById("btnSubmit").disabled = false;
+  document.getElementById("btnSubmit").innerText = "Submit Selection";
+  status.innerText = "System Ready. Please make your selection.";
+  status.style.color = "green";
 }
 
-// ----------------- RENDER DROPDOWNS -----------------
-function renderDropdowns() {
-  ["opt1", "opt2", "opt3"].forEach(id => populateSelect(id, UG_LIMITS, LIVE_COUNTS.ug));
-  populateSelect("pg", PG_LIMITS, LIVE_COUNTS.pg);
+// 3. ERROR HANDLER
+function onSystemError(error) {
+  document.getElementById("mainLoader").style.display = "none";
+  document.getElementById("formContainer").innerHTML = `
+    <h2 style='color:#d93025'>Access Error</h2>
+    <p style='text-align:center;'>${error}</p>
+    <p style='text-align:center; color:#666;'>Try reloading. If the issue persists, ensure you are signed in with @nitte.edu.in</p>
+  `;
+}
+
+// 4. RENDER DROPDOWNS
+function renderDropdowns(ugCounts, pgCounts) {
+  ["opt1", "opt2", "opt3"].forEach(id => populateSelect(id, UG_LIMITS, ugCounts));
+  populateSelect("pg", PG_LIMITS, pgCounts);
 }
 
 function populateSelect(id, limits, counts) {
   const select = document.getElementById(id);
-  const currentSelection = select.value;
-  
   select.innerHTML = '<option value="">-- Select Subject --</option>';
 
   for (const [subject, limit] of Object.entries(limits)) {
@@ -214,77 +254,13 @@ function populateSelect(id, limits, counts) {
       option.disabled = true;
     } else {
       option.text = `${subject} (${limit - used} left)`;
-      option.disabled = false;
     }
     
     select.appendChild(option);
   }
-  
-  if(currentSelection) {
-    const optToCheck = select.querySelector(`option[value="${currentSelection}"]`);
-    if(optToCheck && !optToCheck.disabled) select.value = currentSelection;
-    else select.value = "";
-  }
 }
 
-// ----------------- HELPER: LOCK/UNLOCK DROPDOWNS -----------------
-function toggleDropdowns(enable) {
-  const ids = ["opt1", "opt2", "opt3", "pg"];
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-    el.disabled = !enable;
-    // If we lock them, we might want to reset the view or keep it. 
-    // Usually standard is to leave it but grayed out.
-  });
-}
-
-// ----------------- CHECK EMAIL HISTORY & VALIDATE -----------------
-function checkHistory() {
-  const email = document.getElementById("email").value.trim();
-  const msg = document.getElementById("msg");
-  const loader = document.getElementById("emailLoader");
-  const btn = document.getElementById("btnSubmit");
-
-  // 1. Default: Lock everything first
-  toggleDropdowns(false);
-  msg.innerHTML = "";
-  
-  if(!email) return;
-
-  // 2. Domain Validation
-  if(!email.endsWith("@nitte.edu.in")) {
-    msg.innerHTML = "<span class='error'>Invalid email. Use @nitte.edu.in to unlock options.</span>";
-    return;
-  }
-
-  // 3. Check History
-  loader.style.display = "block";
-  btn.disabled = true;
-
-  fetch(`${SCRIPT_URL}?check_email=${encodeURIComponent(email)}`)
-    .then(res => res.json())
-    .then(result => {
-      loader.style.display = "none";
-      btn.disabled = false;
-
-      if(result.found) {
-        // Found in history -> Show summary (Still locked)
-        showSummaryPage(result.data, true);
-      } else {
-        // Not found -> VALID NEW USER -> UNLOCK
-        toggleDropdowns(true);
-        msg.innerHTML = "<span class='success'>Email verified. Options unlocked.</span>";
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      loader.style.display = "none";
-      btn.disabled = false;
-      msg.innerHTML = "<span class='error'>Error verifying email. Check internet.</span>";
-    });
-}
-
-// ----------------- CHECK DUPLICATES -----------------
+// 5. CHECK DUPLICATES
 function checkDupes() {
   const s1 = document.getElementById("opt1").value;
   const s2 = document.getElementById("opt2").value;
@@ -301,91 +277,84 @@ function checkDupes() {
   }
 }
 
-// ----------------- SHOW SUMMARY PAGE -----------------
-function showSummaryPage(data, isDuplicate) {
-  document.getElementById("formContainer").style.display = "none";
-  document.getElementById("thankYouContainer").style.display = "block";
-  
-  document.getElementById("tyName").innerText = data.name;
-  document.getElementById("tyOpt1").innerText = data.opt1;
-  document.getElementById("tyOpt2").innerText = data.opt2;
-  document.getElementById("tyOpt3").innerText = data.opt3;
-  document.getElementById("tyPg").innerText = data.pg;
-
-  if(isDuplicate) {
-    document.getElementById("tyIcon").innerText = "⚠️";
-    document.getElementById("tyIcon").className = "warning-icon";
-    document.getElementById("tyTitle").innerText = "Already Submitted";
-    document.getElementById("tyMessage").innerHTML = "You have already submitted this form.<br>Contact form owner to edit your response.<br>Here are your recorded choices:";
-    document.getElementById("tyMessage").style.color = "#d93025";
-  } else {
-    document.getElementById("tyIcon").innerText = "✔";
-    document.getElementById("tyIcon").className = "checkmark";
-    document.getElementById("tyTitle").innerText = "Submission Successful!";
-    document.getElementById("tyMessage").innerText = "Your choices have been saved.";
-    document.getElementById("tyMessage").style.color = "#666";
-  }
+// 6. TOGGLE UI
+function toggleDropdowns(enable) {
+  ["opt1", "opt2", "opt3", "pg"].forEach(id => document.getElementById(id).disabled = !enable);
 }
 
+// 7. SUBMIT FORM
 function submitForm() {
-  const msg = document.getElementById("msg");
   const btn = document.getElementById("btnSubmit");
-  
-  const payload = {
+  const msg = document.getElementById("msg");
+
+  // Gather Data
+  const formData = {
     name: document.getElementById("name").value,
-    email: document.getElementById("email").value,
     opt1: document.getElementById("opt1").value,
     opt2: document.getElementById("opt2").value,
     opt3: document.getElementById("opt3").value,
     pg: document.getElementById("pg").value
   };
 
-  // 1. Basic Validation
-  if(!payload.name || !payload.email || !payload.opt1 || !payload.opt2 || !payload.opt3 || !payload.pg){
+  // Validation
+  if(!formData.name || !formData.opt1 || !formData.opt2 || !formData.opt3 || !formData.pg){
     msg.innerHTML = "<span class='error'>Please fill all fields.</span>";
     return;
   }
-  
-  if(!payload.email.endsWith("@nitte.edu.in")){
-    msg.innerHTML = "<span class='error'>Only @nitte.edu.in emails allowed.</span>";
-    return;
-  }
 
-  // 2. CONFIRMATION POPUP
-  const userConfirmed = confirm("Are you sure you want to submit?\n\nNO EDIT OPTION is provided later. Please double check your choices.");
-  if (!userConfirmed) return;
+  // Confirmation
+  if(!confirm("Confirm submission? You cannot change this later.")) return;
 
-  // 3. SEND DATA (With Server-Side Verification)
+  // Lock UI
   btn.disabled = true;
-  btn.innerText = "Verifying & Submitting...";
-  msg.innerHTML = "<span style='color:blue'>Verifying availability...</span>";
+  btn.innerText = "Submitting...";
+  msg.innerHTML = "Verifying availability...";
 
-  // IMPORTANT: Removed 'mode: no-cors' to allow reading the error message
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    body: JSON.stringify(payload)
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.status === "success") {
-      // Success! Show summary
-      showSummaryPage(payload, false);
-    } else {
-      // Error (Subject Full or System Error)
-      msg.innerHTML = `<span class='error'>${data.message}</span>`;
-      btn.disabled = false;
-      btn.innerText = "Submit Selection";
-      
-      // Optional: Refresh limits so the dropdowns update visually
-      fetchSystemData(); 
-    }
-  })
-  .catch(error => {
-    console.error(error);
-    msg.innerHTML = "<span class='error'>Submission failed. Network error or script permission issue.</span>";
-    btn.disabled = false;
-    btn.innerText = "Submit Selection";
-  });
+  // Send to Backend
+  google.script.run
+    .withSuccessHandler(function(response) {
+       if(response.status === 'success') {
+         // Success
+         const email = document.getElementById("displayEmail").innerText;
+         const summaryData = { ...formData, email: email };
+         showSummaryPage(summaryData, false);
+       } else {
+         // Error (e.g. subject full)
+         msg.innerHTML = `<span class='error'>${response.message}</span>`;
+         btn.disabled = false;
+         btn.innerText = "Submit Selection";
+         // Optional: Reload data here if you want to refresh counts
+       }
+    })
+    .withFailureHandler(function(e) {
+        msg.innerHTML = "<span class='error'>Network Error. Try again.</span>";
+        console.error(e);
+        btn.disabled = false;
+        btn.innerText = "Submit Selection";
+    })
+    .processFormSubmission(formData);
+}
+
+// 8. SHOW SUMMARY
+function showSummaryPage(data, isDuplicate) {
+  document.getElementById("formContainer").style.display = "none";
+  document.getElementById("thankYouContainer").style.display = "block";
+  document.getElementById("mainLoader").style.display = "none";
+
+  document.getElementById("tyName").innerText = data.name || "Student";
+  document.getElementById("tyEmail").innerText = data.email;
+  document.getElementById("tyOpt1").innerText = data.opt1;
+  document.getElementById("tyOpt2").innerText = data.opt2;
+  document.getElementById("tyOpt3").innerText = data.opt3;
+  document.getElementById("tyPg").innerText = data.pg;
+
+  if(isDuplicate) {
+    document.getElementById("tyTitle").innerText = "Already Submitted";
+    document.getElementById("tyMessage").innerHTML = "You have already filled this form.<br>Here are your recorded choices:";
+    document.getElementById("tyMessage").style.color = "#d93025";
+    document.getElementById("tyIcon").innerText = "⚠️";
+    document.getElementById("tyIcon").className = "warning-icon";
+  }
 }
 </script>
 
