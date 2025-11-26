@@ -355,9 +355,10 @@
     }
   }
 
-  function submitForm() {
+function submitForm() {
     const msg = document.getElementById("msg");
     const btn = document.getElementById("btnSubmit");
+
     const payload = {
       name: document.getElementById("name").value,
       email: document.getElementById("email").value,
@@ -375,28 +376,50 @@
       msg.innerHTML = "<span class='error'>Only @nitte.edu.in emails allowed.</span>";
       return;
     }
+
     if (!confirm("Are you sure you want to submit?\nNO EDIT OPTION. Double check choices.")) return;
 
     btn.disabled = true;
     btn.innerText = "Verifying & Submitting...";
     msg.innerHTML = "<span style='color:blue'>Verifying availability...</span>";
 
-    fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
-      .then(r => r.json())
-      .then(data => {
-        if (data.status === "success") showSummaryPage(payload, false);
-        else {
-          msg.innerHTML = `<span class='error'>${data.message}</span>`;
-          btn.disabled = false;
-          btn.innerText = "Submit Selection";
-          fetchSystemData();
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      // This header is crucial to prevent CORS Preflight failure
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    })
+    .then(response => {
+        // First check if response is ok
+        if (!response.ok) {
+            throw new Error("Network response was not ok");
         }
-      })
-      .catch(() => {
-        msg.innerHTML = "<span class='error'>Submission failed. Network error.</span>";
+        return response.text().then(text => {
+            try {
+                return JSON.parse(text); // Try to parse JSON
+            } catch (e) {
+                // If it fails, log the actual text (likely an HTML 500 error page)
+                console.error("Server returned non-JSON:", text);
+                throw new Error("Server returned invalid data. Check console.");
+            }
+        });
+    })
+    .then(data => {
+      if (data.status === "success") {
+        showSummaryPage(payload, false);
+      } else {
+        msg.innerHTML = `<span class='error'>${data.message}</span>`;
         btn.disabled = false;
         btn.innerText = "Submit Selection";
-      });
+        fetchSystemData();
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      msg.innerHTML = "<span class='error'>Submission failed. Please try again.</span>";
+      btn.disabled = false;
+      btn.innerText = "Submit Selection";
+    });
   }
 </script>
 
